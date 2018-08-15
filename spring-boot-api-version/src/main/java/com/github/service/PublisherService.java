@@ -1,0 +1,1 @@
+package com.github.service;import com.github.model.User;import org.springframework.stereotype.Service;@Servicepublic class PublisherService {	private Integer count = 0;	public static final String channel = "spring-boot-redis-pubsub";	public void produce() {		User user = new User(10, "中国China123: " + count++);	}}
