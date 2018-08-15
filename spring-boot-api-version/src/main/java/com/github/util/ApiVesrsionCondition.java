@@ -12,9 +12,9 @@ public class ApiVesrsionCondition implements RequestCondition<ApiVesrsionConditi
     // 路径中版本的前缀， 这里用 /v[1-9]/的形式
     private final static Pattern VERSION_PREFIX_PATTERN = Pattern.compile("v(\\d+)/");
     
-    private int apiVersion;
+    private Integer apiVersion;
     
-    public ApiVesrsionCondition(int apiVersion){
+    public ApiVesrsionCondition(Integer apiVersion){
         this.apiVersion = apiVersion;
     }
     
@@ -24,9 +24,9 @@ public class ApiVesrsionCondition implements RequestCondition<ApiVesrsionConditi
     }
 
     public ApiVesrsionCondition getMatchingCondition(HttpServletRequest request) {
-        Matcher m = VERSION_PREFIX_PATTERN.matcher(request.getPathInfo());
-        if(m.find()){
-            Integer version = Integer.valueOf(m.group(1));
+        Matcher matcher = VERSION_PREFIX_PATTERN.matcher(request.getRequestURI());
+        if(matcher.find()){
+            Integer version = Integer.valueOf(matcher.group(1));
             if(version >= this.apiVersion) // 如果请求的版本号大于配置版本号， 则满足
                 return this;
         }
@@ -38,7 +38,7 @@ public class ApiVesrsionCondition implements RequestCondition<ApiVesrsionConditi
         return other.getApiVersion() - this.apiVersion;
     }
 
-    public int getApiVersion() {
+    public Integer getApiVersion() {
         return apiVersion;
     }
 
