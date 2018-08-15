@@ -52,7 +52,7 @@ public class IndexController {
 	@RequestMapping({"", "/", "index"})
 	public String index() {
 		System.err.println(redisTemplate);
-		return "service-producer";
+		return "spring-boot-redis-pubsub";
 	}
 
 }

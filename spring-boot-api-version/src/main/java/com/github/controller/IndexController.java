@@ -46,7 +46,7 @@ public class IndexController {
 
 	@RequestMapping({"", "/", "index"})
 	public String index() {
-		return "service-producer";
+		return "spring-boot-api-version";
 	}
 
 }
