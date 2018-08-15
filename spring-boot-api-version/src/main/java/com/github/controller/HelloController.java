@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-@RequestMapping("/{version}/")
+@RequestMapping("{version}")
 public class HelloController {
 
-    @RequestMapping("hello/")
+    @RequestMapping("hello")
     @ApiVersion(1)
     @ResponseBody
     public String hello() {
@@ -18,7 +18,7 @@ public class HelloController {
         return "hello";
     }
     
-    @RequestMapping("hello/")
+    @RequestMapping("hello")
     @ApiVersion(2)
     @ResponseBody
     public String hello2() {
@@ -27,7 +27,7 @@ public class HelloController {
         return "hello";
     }
     
-    @RequestMapping("hello/")
+    @RequestMapping("hello")
     @ApiVersion(5)
     @ResponseBody
     public String hello5() {
