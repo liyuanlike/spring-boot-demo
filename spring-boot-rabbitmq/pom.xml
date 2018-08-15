@@ -9,13 +9,17 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-boot-api-version</artifactId>
+	<artifactId>spring-boot-rabbitmq</artifactId>
     <packaging>jar</packaging>
 
-	<name>spring-boot-api-version</name>
-	<description>spring-boot-api-version</description>
+	<name>spring-boot-rabbitmq</name>
+	<description>spring-boot-rabbitmq</description>
 
 	<dependencies>
+		<dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-amqp</artifactId>
+	    </dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
