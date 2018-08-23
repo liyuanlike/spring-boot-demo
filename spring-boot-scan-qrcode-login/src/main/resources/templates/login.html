@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta name="viewport" content="width=device-width,initial-scale=1"/>
+	<meta charset="UTF-8"/>
+	<script type="text/javascript" src="//cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+	<script type="text/javascript" src="//cdn.bootcss.com/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+	<script th:inline="javascript" type="text/javascript">
+
+        $(document).ready(function () {
+            var uuid = [[${uuid}]];
+            var url = [[${url}]];
+            $('#qrcode').qrcode(url);
+            $('p').text(url)
+
+			setInterval(function () {
+				$.get('/polling/' + uuid + '/status', function(data) {
+				    if ('doing' == data) {
+                        $('p').text('xxx正在扫码');
+					} else if ('success' == data) {
+                        $('p').text('已确认登录, 即将跳转');
+					}
+				});
+            }, 2000);
+        });
+	</script>
+	<style>
+		.qrcode {
+			width: 150px;
+			height: 150px;
+		}
+	</style>
+	<title>Title</title>
+</head>
+<body>
+
+<div id="qrcode"></div>
+<div id="result"><p></p></div>
+
+<h2><a th:href="${url}" target="_blank">模拟扫码</a></h2>
+
+</body>
+</html>
+
