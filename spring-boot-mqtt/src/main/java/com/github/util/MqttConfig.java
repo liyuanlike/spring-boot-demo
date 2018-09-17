@@ -3,6 +3,7 @@ package com.github.util;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
@@ -21,6 +22,10 @@ import org.springframework.messaging.MessageHandler;
 @Configuration
 public class MqttConfig {
 
+	private String serialNumber = "00:00:00:00";
+	private String clientId = "GID_reader@ClientID_" + serialNumber;
+	private String topic = "reader_push/" + serialNumber;
+
 	// 配置client factory
 	@Bean
 	public MqttPahoClientFactory mqttClientFactory() {
@@ -31,18 +36,19 @@ public class MqttConfig {
 		mqttConnectOptions.setServerURIs(new String[]{"tcp://182.151.25.46:1883"});
 		mqttConnectOptions.setUserName("admin");
 		mqttConnectOptions.setPassword("admin".toCharArray());
+		mqttConnectOptions.setCleanSession(false);
+		mqttConnectOptions.setAutomaticReconnect(true);
         factory.setConnectionOptions(mqttConnectOptions);
 		return factory;
 	}
 
 
 	// 配置consumer
+	/*
 	@Bean
-	public IntegrationFlow mqttInFlow() {
-		return IntegrationFlows.from(mqttInbound())
-				.transform(p -> p + ", received from MQTT")
-				.handle(logger())
-				.get();
+	public IntegrationFlow mqttInFlow(MqttPahoClientFactory mqttClientFactory) {
+		return IntegrationFlows.from(mqttInbound(mqttClientFactory))
+				.transform(p -> p + ", received from MQTT").handle(logger()).get();
 	}
 
 	private LoggingHandler logger() {
@@ -52,29 +58,27 @@ public class MqttConfig {
 	}
 
 	@Bean
-	public MessageProducerSupport mqttInbound() {
-		MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter("siSampleConsumer",
-				mqttClientFactory(), "siSampleTopic");
+	public MessageProducerSupport mqttInbound(MqttPahoClientFactory mqttClientFactory) {
+		MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory, topic);
 		adapter.setCompletionTimeout(5000);
 		adapter.setConverter(new DefaultPahoMessageConverter());
 		adapter.setQos(1);
 		return adapter;
-	}
+	}*/
 
 
 
 	// 配置producer
+	private String producerClientId = "GID_reader@ClientID_producer";
 	@Bean
-	public IntegrationFlow mqttOutFlow() {
+	public IntegrationFlow mqttOutFlow(MqttPahoClientFactory mqttClientFactory) {
 		//console input
 //        return IntegrationFlows.from(CharacterStreamReadingMessageSource.stdin(),
 //                e -> e.poller(Pollers.fixedDelay(1000)))
 //                .transform(p -> p + " sent to MQTT")
 //                .handle(mqttOutbound())
 //                .get();
-		return IntegrationFlows.from(outChannel())
-				.handle(mqttOutbound())
-				.get();
+		return IntegrationFlows.from(outChannel()).handle(mqttOutbound(mqttClientFactory)).get();
 	}
 
 	@Bean
@@ -83,10 +87,11 @@ public class MqttConfig {
 	}
 
 	@Bean
-	public MessageHandler mqttOutbound() {
-		MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler("siSamplePublisher", mqttClientFactory());
+	@Primary
+	public MessageHandler mqttOutbound(MqttPahoClientFactory mqttClientFactory) {
+		MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(producerClientId, mqttClientFactory);
 		messageHandler.setAsync(true);
-		messageHandler.setDefaultTopic("siSampleTopic");
+		messageHandler.setDefaultTopic(topic);
 		return messageHandler;
 	}
 
