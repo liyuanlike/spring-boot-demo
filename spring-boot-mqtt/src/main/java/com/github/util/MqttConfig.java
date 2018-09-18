@@ -28,7 +28,7 @@ import org.springframework.messaging.handler.annotation.Header;
 @Configuration
 public class MqttConfig {
 
-	private String clientIdConsumer = "spring-boot-mqtt-1";
+	private String clientIdConsumer = "spring-boot-mqtt-consumer-1";
 	private String broker = "tcp://182.151.25.46:1883";
 	private String userName = "admin";
 	private String password = "admin";
@@ -83,7 +83,7 @@ public class MqttConfig {
 
 	// 配置producer
 	/**/
-	private String clientIdProducer = "spring-boot-mqtt-1";
+	private String clientIdProducer = "spring-boot-mqtt-producer-1";
 	@Bean
 	public MessageChannel outChannel() {
 		return new DirectChannel();
@@ -95,6 +95,7 @@ public class MqttConfig {
 		MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(clientIdProducer, mqttClientFactory);
 		messageHandler.setAsync(true);
 		messageHandler.setDefaultTopic(topic);
+		messageHandler.setDefaultQos(1);
 		return messageHandler;
 	}
 

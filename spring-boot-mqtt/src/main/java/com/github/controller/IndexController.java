@@ -58,6 +58,7 @@ public class IndexController {
 	@GetMapping("producer")
 	public String producer() {
 		mqttGateway.write("中国China123456");
+		mqttGateway.sendToMqtt("reader/abc", 1, "成都市abc123");
 		return "success";
 	}
 
