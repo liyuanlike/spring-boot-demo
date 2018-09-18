@@ -57,7 +57,7 @@ public class IndexController {
 
 	@GetMapping("producer")
 	public String producer() {
-		producer.write("Hello World!");
+		producer.write("中国China123456");
 		return "success";
 	}
 
