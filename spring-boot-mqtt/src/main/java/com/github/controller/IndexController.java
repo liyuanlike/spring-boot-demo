@@ -48,7 +48,7 @@ import javax.annotation.Resource;
 @RequestMapping
 public class IndexController {
 
-	@Resource private MqttConfig.Producer producer;
+	@Resource private MqttConfig.MqttGateway mqttGateway;
 
 	@RequestMapping({"", "/", "index"})
 	public String index() {
@@ -57,7 +57,7 @@ public class IndexController {
 
 	@GetMapping("producer")
 	public String producer() {
-		producer.write("中国China123456");
+		mqttGateway.write("中国China123456");
 		return "success";
 	}
 

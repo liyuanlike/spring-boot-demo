@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.integration.annotation.MessagingGateway;
+import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -15,27 +16,34 @@ import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
+import org.springframework.integration.mqtt.support.MqttHeaders;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.handler.annotation.Header;
 
 
 @Configuration
 public class MqttConfig {
 
-	private String serialNumber = "00:00:00:00";
-	private String clientId = "GID_reader@ClientID_" + serialNumber;
-	private String topic = "reader_push/" + serialNumber;
+	private String clientIdConsumer = "spring-boot-mqtt-1";
+	private String broker = "tcp://182.151.25.46:1883";
+	private String userName = "admin";
+	private String password = "admin";
+	private String topic = "reader/asf";
+	private String loginTopic = "reader/login/#";
 
-	// 配置client factory
+	// 配置ClientFactory
 	@Bean
 	public MqttPahoClientFactory mqttClientFactory() {
 
 		DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
-
 		MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
-		mqttConnectOptions.setServerURIs(new String[]{"tcp://182.151.25.46:1883"});
-		mqttConnectOptions.setUserName("admin");
-		mqttConnectOptions.setPassword("admin".toCharArray());
+		mqttConnectOptions.setServerURIs(new String[]{broker});
+		mqttConnectOptions.setUserName(userName);
+		mqttConnectOptions.setPassword(password.toCharArray());
 		mqttConnectOptions.setCleanSession(false);
 		mqttConnectOptions.setAutomaticReconnect(true);
         factory.setConnectionOptions(mqttConnectOptions);
@@ -44,62 +52,59 @@ public class MqttConfig {
 
 
 	// 配置consumer
-	/*
 	@Bean
-	public IntegrationFlow mqttInFlow(MqttPahoClientFactory mqttClientFactory) {
-		return IntegrationFlows.from(mqttInbound(mqttClientFactory))
-				.transform(p -> p + ", received from MQTT").handle(logger()).get();
-	}
-
-	private LoggingHandler logger() {
-		LoggingHandler loggingHandler = new LoggingHandler("INFO");
-		loggingHandler.setLoggerName("siSample");
-		return loggingHandler;
+	public MessageChannel mqttInputChannel() {
+		return new DirectChannel();
 	}
 
 	@Bean
 	public MessageProducerSupport mqttInbound(MqttPahoClientFactory mqttClientFactory) {
-		MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory, topic);
+		MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(clientIdConsumer, mqttClientFactory, loginTopic);
 		adapter.setCompletionTimeout(5000);
 		adapter.setConverter(new DefaultPahoMessageConverter());
 		adapter.setQos(1);
+		adapter.setOutputChannel(mqttInputChannel());
 		return adapter;
-	}*/
-
+	}
+	@Bean
+	@ServiceActivator(inputChannel = "mqttInputChannel")
+	public MessageHandler handler() {
+		return new MessageHandler() {
+			@Override
+			public void handleMessage(Message<?> message) throws MessagingException {
+				MessageHeaders messageHeaders = message.getHeaders();
+				System.err.println(messageHeaders);
+				System.err.println(message);
+				System.err.println(message.getPayload() + ": consumer...");
+			}
+		};
+	}
 
 
 	// 配置producer
-	private String producerClientId = "GID_reader@ClientID_producer";
-	@Bean
-	public IntegrationFlow mqttOutFlow(MqttPahoClientFactory mqttClientFactory) {
-		//console input
-//        return IntegrationFlows.from(CharacterStreamReadingMessageSource.stdin(),
-//                e -> e.poller(Pollers.fixedDelay(1000)))
-//                .transform(p -> p + " sent to MQTT")
-//                .handle(mqttOutbound())
-//                .get();
-		return IntegrationFlows.from(outChannel()).handle(mqttOutbound(mqttClientFactory)).get();
-	}
-
+	/**/
+	private String clientIdProducer = "spring-boot-mqtt-1";
 	@Bean
 	public MessageChannel outChannel() {
 		return new DirectChannel();
 	}
 
 	@Bean
-	@Primary
+	@ServiceActivator(inputChannel = "outChannel")
 	public MessageHandler mqttOutbound(MqttPahoClientFactory mqttClientFactory) {
-		MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(producerClientId, mqttClientFactory);
+		MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(clientIdProducer, mqttClientFactory);
 		messageHandler.setAsync(true);
 		messageHandler.setDefaultTopic(topic);
 		return messageHandler;
 	}
 
-
 	// 配置MessagingGateway
 	@MessagingGateway(defaultRequestChannel = "outChannel")
-	public interface Producer {
+	public interface MqttGateway {
 		void write(String note);
+		void sendToMqtt(String data);
+		void sendToMqtt(@Header(MqttHeaders.TOPIC) String topic, String payload);
+		void sendToMqtt(@Header(MqttHeaders.TOPIC) String topic, @Header(MqttHeaders.QOS) int qos, String payload);
 	}
 
 
