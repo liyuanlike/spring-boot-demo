@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: job-schedule-lock
+  redis:
+    database: 0
+    host: 192.168.1.3
+    password: be
+
