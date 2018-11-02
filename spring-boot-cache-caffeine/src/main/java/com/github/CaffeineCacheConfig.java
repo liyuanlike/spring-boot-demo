@@ -28,7 +28,6 @@ public class CaffeineCacheConfig {
         cacheManager.setAllowNullValues(true);
         cacheManager.setCaffeine(caffeine);
 //        cacheManager.setCacheLoader(cacheLoader);
-//        cacheManager.setcach
 //        cacheManager.setCacheNames(getNames());
         return cacheManager;
     }
