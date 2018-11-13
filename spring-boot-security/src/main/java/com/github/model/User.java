@@ -37,10 +37,12 @@
 package com.github.model;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class User implements UserDetails {
 
@@ -49,6 +51,7 @@ public class User implements UserDetails {
 	private Integer id;
 	private String username;
 	private String password;
+	private Set<String> roleSet;
 
 	private Integer passwordExpire;
 	private Integer expire;
@@ -70,7 +73,7 @@ public class User implements UserDetails {
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		// 返回分配给用户的角色列表
-		return null;
+		return roleSet.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 	}
 	@Override
 	public String getPassword() {
