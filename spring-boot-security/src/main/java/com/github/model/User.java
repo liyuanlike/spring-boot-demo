@@ -60,9 +60,10 @@ public class User implements UserDetails {
 
 	public User(){}
 
-	public User(String username) {
+	public User(String username, Set<String> roleSet) {
 		this.username = username;
 		this.password = "password";
+		this.roleSet = roleSet;
 		this.id = 100;
 		this.passwordExpire = 0;
 		this.expire = 0;

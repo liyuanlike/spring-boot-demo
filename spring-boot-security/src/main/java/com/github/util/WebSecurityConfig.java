@@ -1,6 +1,7 @@
 package com.github.util;
 
 import com.github.service.UserService;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -9,6 +10,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Resource;
 
@@ -17,21 +20,22 @@ import javax.annotation.Resource;
 @EnableGlobalMethodSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Resource private UserService userService;
+	@Resource
+	private UserService userService;
 
 	@Override
 	public void configure(WebSecurity web) throws Exception {
-		web.ignoring().antMatchers(HttpMethod.GET, "/config/**", "/css/**", "/fonts/**", "/img/**", "/js/**");
+		web.ignoring().antMatchers(HttpMethod.GET, "/**/favicon.ico", "/assets/**");
 	}
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-				.antMatchers("/", "/home").permitAll().anyRequest().authenticated()
-				.and()
-				.formLogin().loginPage("/login").permitAll()
-				.and()
-				.logout().permitAll()
+				.antMatchers("/", "/index").permitAll().anyRequest().authenticated()
+//				.and()
+//				.formLogin().loginPage("/login").failureUrl("/login-error").permitAll()
+//				.and()
+//				.logout().logoutSuccessUrl("/index.html")
 				.and()
 				.csrf().disable();
 	}
@@ -39,7 +43,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		super.configure(auth);
-		auth.inMemoryAuthentication().withUser("user").password("password").roles("ROLE_USER");
+		auth.inMemoryAuthentication().withUser("user").password("password").roles("USER");
+//		auth.userDetailsService(myUserDetailsService).passwordEncoder(passwordEncoder());
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 
 }
