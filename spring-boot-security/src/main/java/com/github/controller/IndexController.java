@@ -54,7 +54,7 @@ public class IndexController {
 	// Login form
 	@RequestMapping("/login")
 	public String login() {
-		return "login.html";
+		return "login";
 	}
 
 	// Login form with error
@@ -62,6 +62,11 @@ public class IndexController {
 	public String loginError(Model model) {
 		model.addAttribute("loginError", true);
 		return "login";
+	}
+
+	@RequestMapping("/hello")
+	public String hello() {
+		return "hello";
 	}
 
 }
