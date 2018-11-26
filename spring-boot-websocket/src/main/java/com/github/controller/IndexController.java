@@ -36,37 +36,49 @@
  */
 package com.github.controller;
 
+import com.github.model.SocketMessage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 @Controller
+@EnableScheduling
 @RequestMapping
 public class IndexController {
+
+	@Autowired private SimpMessagingTemplate messagingTemplate;
+
 
 	@RequestMapping({"", "/", "index"})
 	public String index() {
 		return "index";
 	}
 
-	// Login form
-	@RequestMapping("/login")
-	public String login() {
-		return "login";
+	@MessageMapping("/send")
+	@SendTo("/topic/send")
+	public SocketMessage send(SocketMessage message) {
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		message.date = df.format(new Date());
+		return message;
 	}
 
-	// Login form with error
-	@RequestMapping("/login-error")
-	public String loginError(Model model) {
-		model.addAttribute("loginError", true);
-		return "login";
-	}
-
-	@RequestMapping("/hello")
-	public String hello() {
-		return "hello";
+	@Scheduled(fixedRate = 6 * 1000)
+	@SendTo("/topic/callback")
+	public Object callback() {
+		// 发现消息
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		messagingTemplate.convertAndSend("/topic/callback", df.format(new Date()));
+		return "callback";
 	}
 
 }

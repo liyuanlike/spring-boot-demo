@@ -31,7 +31,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
          * addEndpoint：添加STOMP协议的端点。这个HTTP URL是供WebSocket或SockJS客户端访问的地址
          * withSockJS：指定端点使用SockJS协议
          */
-        registry.addEndpoint("/messages")
+        registry.addEndpoint("/my-websocket")
                 .setAllowedOrigins("*") // 添加允许跨域访问
                 .withSockJS();
     }
@@ -51,6 +51,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureClientInboundChannel(ChannelRegistration registration) {
     }
 
+    /*
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         registration.addDecoratorFactory(new WebSocketHandlerDecoratorFactory() {
@@ -75,7 +76,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 };
             }
         });
-    }
+    }*/
 
 }
 
