@@ -36,15 +36,16 @@
  */
 package com.github.controller;
 
-import com.github.model.SocketMessage;
+import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -64,21 +65,28 @@ public class IndexController {
 		return "index";
 	}
 
-	@MessageMapping("/send")
+	@MessageMapping("/receive")
 	@SendTo("/topic/send")
-	public SocketMessage send(SocketMessage message) {
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		message.date = df.format(new Date());
-		return message;
+	public String receive(String message) {
+		System.err.println(message);
+		return message + ": " + RandomStringUtils.randomAlphabetic(6);
 	}
 
-	@Scheduled(fixedRate = 6 * 1000)
-	@SendTo("/topic/callback")
-	public Object callback() {
+//	@Scheduled(fixedRate = 6 * 1000)
+//	@SendTo("/topic/callback")
+//	public Object callback() {
+//		// 发现消息
+//		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//		messagingTemplate.convertAndSend("/topic/callback", df.format(new Date()));
+//		return "callback";
+//	}
+
+	@ResponseBody
+	@GetMapping("send")
+	public Object send() {
 		// 发现消息
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		messagingTemplate.convertAndSend("/topic/callback", df.format(new Date()));
-		return "callback";
+		messagingTemplate.convertAndSend("/topic/callback", RandomStringUtils.randomAlphabetic(2));
+		return "send success.";
 	}
 
 }

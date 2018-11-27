@@ -1,93 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>玩转spring boot——websocket</title>
-	<script src="//cdn.bootcss.com/angular.js/1.5.6/angular.min.js"></script>
-	<script src="//cdn.staticfile.org/sockjs-client/1.1.5/sockjs.min.js"></script>
-	<script src="//cdn.staticfile.org/stomp.js/2.3.3/stomp.min.js"></script>
-	<script type="text/javascript">
-        /*<![CDATA[*/
-        var stompClient = null;
+<title>spring boot——websocket</title>
+<script src="//cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+<script src="//cdn.staticfile.org/sockjs-client/1.1.5/sockjs.min.js"></script>
+<script src="//cdn.staticfile.org/stomp.js/2.3.3/stomp.min.js"></script>
+<script type="text/javascript">
 
-        var app = angular.module('app', []);
-        app.controller('MainController', function($rootScope, $scope, $http) {
+    var url = "/my-websocket";
+    var stompClient = null;
 
-            $scope.data = {
-                //连接状态
-                connected : false,
-                //消息
-                message : '',
-                rows : []
-            };
+    function connect(url) {
 
-            //连接
-            $scope.connect = function() {
-                var socket = new SockJS('/my-websocket');
-                stompClient = Stomp.over(socket);
-                stompClient.connect({}, function(frame) {
-                    // 注册发送消息
-                    stompClient.subscribe('/topic/send', function(msg) {
-                        $scope.data.rows.push(JSON.parse(msg.body));
-                        $scope.data.connected = true;
-                        $scope.$apply();
-                    });
-                    // 注册推送时间回调
-                    stompClient.subscribe('/topic/callback', function(r) {
-                        $scope.data.time = '当前服务器时间：' + r.body;
-                        $scope.data.connected = true;
-                        $scope.$apply();
-                    });
+        var websocket = new SockJS(url);
+        stompClient = Stomp.over(websocket);
 
-                    $scope.data.connected = true;
-                    $scope.$apply();
-                });
-            };
+        function connectCallback(frame) {
+            // 连接成功时（服务器响应 CONNECTED 帧）的回调方法
+            console.log('连接成功【' + frame + '】');
 
-            $scope.disconnect = function() {
-                if (stompClient != null) {
-                    stompClient.disconnect();
-                }
-                $scope.data.connected = false;
-            }
+            // 注册发送消息
+            stompClient.subscribe('/topic/send', function(message) {
+                console.log("receive: /topic/send: " + message.body);
+            });
+            // 注册推送时间回调
+            stompClient.subscribe('/topic/callback', function(message) {
+                console.log("receive: /topic/callback: " + message.body);
+            });
+        }
 
-            $scope.send = function() {
-                stompClient.send("/app/send", {}, JSON.stringify({
-                    'message' : $scope.data.message
-                }));
-            }
-        });
-        /*]]>*/
-	</script>
+        function errorCallback(error) {
+            // 连接失败时（服务器响应 ERROR 帧）的回调方法
+            console.log("连接失败: " + error);
+
+        }
+
+        // 向服务器发起websocket连接并发送CONNECT帧
+        stompClient.connect({}, connectCallback, errorCallback);
+    }
+    connect(url);
+    setInterval(function(){
+        if (stompClient.ws.readyState > 1) {
+            console.log('try reconnect.');
+            connect(url);
+        }
+    }, 6000);
+
+
+
+    function disconnect() {
+        console.log('dis')
+        if (stompClient != null) {
+            stompClient.disconnect();
+        }
+    }
+
+    function send() {
+        stompClient.send("/app/receive", {}, $('#message').val());
+    }
+
+    window.onbeforeunload = disconnect;
+
+
+</script>
 </head>
-<body ng-app="app" ng-controller="MainController">
+<body>
 
 <h2>websocket</h2>
 
-<label>WebSocket连接状态:</label>
-<button type="button" ng-disabled="data.connected" ng-click="connect()">连接</button>
-<button type="button" ng-click="disconnect()"
-		ng-disabled="!data.connected">断开</button>
-<br />
-<br />
+<button type="button" onclick="connect();">连接</button>
+<button type="button" onclick="disconnect();">断开</button>
+<br/>
+<br/>
 <div ng-show="data.connected">
-	<label>{{data.time}}</label> <br /> <br /> <input type="text"
-													  ng-model="data.message" placeholder="请输入内容..." />
-	<button ng-click="send()" type="button">发送</button>
-	<br /> <br /> 消息列表： <br />
-	<table>
-		<thead>
-		<tr>
-			<th>内容</th>
-			<th>时间</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr ng-repeat="row in data.rows">
-			<td>{{row.message}}</td>
-			<td>{{row.date}}</td>
-		</tr>
-		</tbody>
-	</table>
+    <label>{{data.time}}</label> <br/> <br/>
+    <input type="text" id="message" placeholder="请输入内容..."/>
+    <button onclick="send()" type="button">发送</button>
 </div>
 </body>
 </html>
+
+
