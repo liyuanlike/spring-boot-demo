@@ -1,6 +1,5 @@
 package com.github.util;
 
-import com.github.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,8 +11,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import javax.annotation.Resource;
 
 @Configuration
 @EnableWebSecurity
@@ -34,7 +31,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.and()
 				.formLogin().loginPage("/login").failureUrl("/login-error").permitAll()
 				.and()
-				.logout().logoutSuccessUrl("/index.html")
+				.logout().logoutSuccessUrl("/index")
 				.and()
 				.csrf().disable();
 	}

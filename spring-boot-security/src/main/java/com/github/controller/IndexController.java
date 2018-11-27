@@ -39,7 +39,10 @@ package com.github.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 @Controller
@@ -51,20 +54,26 @@ public class IndexController {
 		return "index";
 	}
 
+	@ResponseBody
+	@RequestMapping("t")
+	public String t(HttpServletRequest request) {
+		return "t";
+	}
+
 	// Login form
-	@RequestMapping("/login")
+	@RequestMapping("login")
 	public String login() {
 		return "login";
 	}
 
 	// Login form with error
-	@RequestMapping("/login-error")
+	@RequestMapping("login-error")
 	public String loginError(Model model) {
 		model.addAttribute("loginError", true);
 		return "login";
 	}
 
-	@RequestMapping("/hello")
+	@RequestMapping("hello")
 	public String hello() {
 		return "hello";
 	}
